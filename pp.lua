@@ -1,5 +1,5 @@
 --fast, small recursive pretty printer with optional indentation and cycle detection
-local pf = require'pformat'
+local pf = require'pp_format'
 local glue = require'glue'
 
 local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper)
