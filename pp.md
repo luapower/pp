@@ -1,6 +1,7 @@
 ---
-project: pp
-tagline: fast pretty-printing & serialization
+project:  pp
+tagline:  fast pretty-printing & serialization
+category: Language
 ---
 
 v0.9b | LuaJIT 2, Lua 5.1, Lua 5.2
