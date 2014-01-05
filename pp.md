@@ -4,8 +4,6 @@ tagline:  fast pretty-printing & serialization
 category: Language
 ---
 
-v0.9b | LuaJIT 2, Lua 5.1, Lua 5.2
-
 ## `local pp = require'pp'`
 
 Fast, compact serialization producing portable Lua source code.
