@@ -1,4 +1,4 @@
---fast, small recursive pretty printer with optional indentation and cycle detection
+--fast, small recursive pretty printer with optional indentation and cycle detection (Cosmin Apreutesei, public domain).
 local pf = require'pp_format'
 local glue = require'glue'
 
@@ -47,20 +47,20 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 	end
 end
 
-local function to_sink(v, write, indent, parents, quote, onerror)
-	return pretty(v, write, indent, parents, quote, onerror, 1)
+local function to_sink(v, write, indent, parents, quote, onerror, depth)
+	return pretty(v, write, indent, parents, quote, onerror, depth or 1)
 end
 
-local function to_string(v, indent, parents, quote, onerror)
+local function to_string(v, indent, parents, quote, onerror, depth)
 	local buf = {}
-	pretty(v, function(s) buf[#buf+1] = s end, indent, parents, quote, onerror, 1)
+	pretty(v, function(s) buf[#buf+1] = s end, indent, parents, quote, onerror, depth or 1)
 	return table.concat(buf)
 end
 
-local function to_file(file, v, indent, parents, quote, onerror)
+local function to_file(file, v, indent, parents, quote, onerror, depth)
 	local f = assert(io.open(file, 'wb'))
 	f:write'return '
-	pretty(v, function(s) f:write(s) end, indent, parents, quote, onerror, 1)
+	pretty(v, function(s) f:write(s) end, indent, parents, quote, onerror, depth or 1)
 	f:close()
 end
 
