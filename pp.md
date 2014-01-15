@@ -1,7 +1,6 @@
 ---
 project:  pp
 tagline:  fast pretty-printing & serialization
-category: Language
 ---
 
 ## `local pp = require'pp'`
