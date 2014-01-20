@@ -1,6 +1,6 @@
 ---
-project:  pp
-tagline:  fast pretty-printing & serialization
+project: pp
+tagline: table serialization
 ---
 
 ## `local pp = require'pp'`
