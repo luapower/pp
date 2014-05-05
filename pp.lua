@@ -84,6 +84,7 @@ return setmetatable({
 	format = to_string,
 	save = to_file,
 	print = pp,
+	pp = pp, --old API
 }, {__call = function(self, ...)
 	return pp(...)
 end})
