@@ -1,10 +1,9 @@
 --fast, small recursive pretty printer with optional indentation and cycle detection (Cosmin Apreutesei, public domain).
 local pf = require'pp_format'
-local glue = require'glue'
 
 local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper)
 	if pf.is_serializable(v) then
-		pf.pwrite(v, write, quote)
+		pf.write(v, write, quote)
 	elseif getmetatable(v) and getmetatable(v).__pwrite then
 		wwrapper = wwrapper or function(v)
 			pretty(v, write, nil, parents, quote, onerror, -1, wwrapper)
@@ -18,8 +17,10 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 			end
 			parents[v] = true
 		end
+
 		write'{'
 		local maxn = 0; while v[maxn+1] ~= nil do maxn = maxn+1 end
+
 		local first = true
 		for k,v in pairs(v) do
 			if not (maxn > 0 and type(k) == 'number' and k == math.floor(k) and k >= 1 and k <= maxn) then
@@ -33,13 +34,16 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 				pretty(v, write, indent, parents, quote, onerror, depth + 1, wwrapper)
 			end
 		end
+
 		for k,v in ipairs(v) do
 			if first then first = false else write',' end
 			if indent then write'\n'; write(indent:rep(depth)) end
 			pretty(v, write, indent, parents, quote, onerror, depth + 1, wwrapper)
 		end
+
 		if indent then write'\n'; write(indent:rep(depth-1)) end
 		write'}'
+
 		if parents then parents[v] = nil end
 	else
 		write(onerror and onerror('unserializable', v, depth) or
@@ -47,7 +51,7 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 	end
 end
 
-local function to_sink(v, write, indent, parents, quote, onerror, depth)
+local function to_sink(write, v, indent, parents, quote, onerror, depth)
 	return pretty(v, write, indent, parents, quote, onerror, depth or 1)
 end
 
@@ -75,9 +79,11 @@ end
 
 if not ... then require'pp_test' end
 
-return {
-	pformat = to_string,
-	pwrite = to_sink,
-	fwrite = to_file,
-	pp = pp,
-}
+return setmetatable({
+	write = to_sink,
+	format = to_string,
+	save = to_file,
+	print = pp,
+}, {__call = function(self, ...)
+	return pp(...)
+end})
