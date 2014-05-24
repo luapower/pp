@@ -19,7 +19,7 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 		end
 
 		write'{'
-		local maxn = 0; while v[maxn+1] ~= nil do maxn = maxn+1 end
+		local maxn = 0; while rawget(v, maxn+1) ~= nil do maxn = maxn+1 end
 
 		local first = true
 		for k,v in pairs(v) do
