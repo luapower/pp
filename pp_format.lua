@@ -1,27 +1,32 @@
 --pretty-printing of non-structured types
 
+local type, tostring = type, tostring
+local string_format, string_dump = string.format, string.dump
+local math_huge, math_floor = math.huge, math.floor
+
 local escapes = { --don't add unpopular escapes here
 	['\\'] = '\\\\',
 	['\t'] = '\\t',
 	['\n'] = '\\n',
 	['\r'] = '\\r',
 }
-local function escape_byte(c)
-	return string.format('\\%03d', c:byte())
+
+local function escape_byte_long(c1, c2)
+	return string_format('\\%03d%s', c1:byte(), c2)
 end
 local function escape_byte_short(c)
-	return string.format('\\%d', c:byte())
+	return string_format('\\%d', c:byte())
 end
 local function quote_string(s, quote)
 	s = s:gsub('[\\\t\n\r]', escapes)
 	s = s:gsub(quote, '\\%1')
-	s = s:gsub('[^\32-\126][0-9]', escape_byte)
+	s = s:gsub('([^\32-\126])([0-9])', escape_byte_long)
 	s = s:gsub('[^\32-\126]', escape_byte_short)
 	return s
 end
 
 local function format_string(s, quote)
-	return string.format('%s%s%s', quote, quote_string(s, quote), quote)
+	return string_format('%s%s%s', quote, quote_string(s, quote), quote)
 end
 
 local function write_string(s, write, quote)
@@ -43,18 +48,18 @@ local function is_identifier(v)
 				and v:find('^[a-zA-Z_][a-zA-Z_0-9]*$') ~= nil
 end
 
-local hasinf = math.huge == math.huge - 1
+local hasinf = math_huge == math_huge - 1
 local function format_number(v)
 	if v ~= v then
 		return '0/0' --NaN
-	elseif hasinf and v == math.huge then
+	elseif hasinf and v == math_huge then
 		return '1/0' --writing 'math.huge' would not make it portable, just wrong
-	elseif hasinf and v == -math.huge then
+	elseif hasinf and v == -math_huge then
 		return '-1/0'
-	elseif v == math.floor(v) and v >= -2^31 and v <= 2^31-1 then
-		return string.format('%d', v) --printing with %d is faster
+	elseif v == math_floor(v) and v >= -2^31 and v <= 2^31-1 then
+		return string_format('%d', v) --printing with %d is faster
 	else
-		return string.format('%0.17g', v)
+		return string_format('%0.17g', v)
 	end
 end
 
@@ -67,11 +72,11 @@ local function is_dumpable(f)
 end
 
 local function format_function(f)
-	return string.format('loadstring(%s)', format_string(string.dump(f)))
+	return string_format('loadstring(%s)', format_string(string_dump(f, true)))
 end
 
 local function write_function(f, write, quote)
-	write'loadstring('; write_string(string.dump(f), write, quote); write')'
+	write'loadstring('; write_string(string_dump(f, true), write, quote); write')'
 end
 
 local ffi, int64, uint64

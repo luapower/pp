@@ -1,9 +1,11 @@
 --fast, small recursive pretty printer with optional indentation and cycle detection (Cosmin Apreutesei, public domain).
 local pf = require'pp_format'
+local pf_is_serializable, pf_is_identifier, pf_write =
+		pf.is_serializable, pf.is_identifier, pf.write
 
 local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper)
-	if pf.is_serializable(v) then
-		pf.write(v, write, quote)
+	if pf_is_serializable(v) then
+		pf_write(v, write, quote)
 	elseif getmetatable(v) and getmetatable(v).__pwrite then
 		wwrapper = wwrapper or function(v)
 			pretty(v, write, nil, parents, quote, onerror, -1, wwrapper)
@@ -26,7 +28,7 @@ local function pretty(v, write, indent, parents, quote, onerror, depth, wwrapper
 			if not (maxn > 0 and type(k) == 'number' and k == math.floor(k) and k >= 1 and k <= maxn) then
 				if first then first = false else write',' end
 				if indent then write'\n'; write(indent:rep(depth)) end
-				if pf.is_identifier(k) then
+				if pf_is_identifier(k) then
 					write(k); write'='
 				else
 					write'['; pretty(k, write, indent, parents, quote, onerror, depth + 1, wwrapper); write']='
