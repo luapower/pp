@@ -1,4 +1,8 @@
---fast, small recursive pretty printer with optional indentation and cycle detection (Cosmin Apreutesei, public domain).
+
+--fast, small recursive pretty printer with optional indentation
+--and cycle detection.
+--Written by Cosmin Apreutesei. Public Domain.
+
 local pf = require'pp_format'
 local pf_is_serializable, pf_is_identifier, pf_write =
 		pf.is_serializable, pf.is_identifier, pf.write
