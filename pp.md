@@ -54,7 +54,7 @@ Cycle detection and indentation are enabled.
 Unserializable values get a comment in place.
 
 
-### `pp.write(write, v, [, indent][, parents][, quote][, onerror])`
+### `pp.write(write, v, [indent], [parents], [quote], [onerror])`
 
 Pretty-print a value using a supplied write function that takes a string.
 The other arguments are:
@@ -80,11 +80,11 @@ for s in chunks(t) do
 end
 ~~~
 
-### `pp.save(file, v[, indent][, parents][, quote][, onerror])`
+### `pp.save(file, v, [indent], [parents], [quote], [onerror])`
 
 Pretty-print a value to a file.
 
 
-### `pp.format(v[, indent][, parents][, quote][, onerror]) -> s`
+### `pp.format(v, [indent], [parents], [quote], [onerror]) -> s`
 
 Pretty-print a value to a string.
