@@ -1,5 +1,4 @@
 ---
-project: pp
 tagline: table serialization
 ---
 
