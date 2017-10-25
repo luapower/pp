@@ -1,6 +1,5 @@
 
---fast, small recursive pretty printer with optional indentation
---and cycle detection.
+--recursive pretty printer with optional indentation and cycle detection.
 --Written by Cosmin Apreutesei. Public Domain.
 
 local pf = require'pp_format'
