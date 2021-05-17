@@ -254,11 +254,12 @@ local function pretty(v, write, depth, wwrapper, indent,
 		write'{'
 
 		local first = true
+		local t = v
 
 		local maxn = 0
-		for k,v in ipairs(v) do
+		for k,v in ipairs(t) do
 			maxn = maxn + 1
-			if filter(v, k) then
+			if filter(v, k, t) then
 				if first then
 					first = false
 				else
@@ -274,8 +275,8 @@ local function pretty(v, write, depth, wwrapper, indent,
 		end
 
 		local pairs = sort_keys and sortedpairs or pairs
-		for k,v in pairs(v, parents) do
-			if not is_array_index_key(k, maxn) and filter(v, k) then
+		for k,v in pairs(t, parents) do
+			if not is_array_index_key(k, maxn) and filter(v, k, t) then
 				if first then
 					first = false
 				else
@@ -365,8 +366,14 @@ local function to_stdout(v, ...)
 	return to_openfile(io.stdout, v, ...)
 end
 
-local function filter(v, k)
-	return type(v) ~= 'function'
+local metamethods = {
+	__index = 1,
+	__newindex = 1,
+	__mode = 1,
+}
+
+local function filter(v, k, t)
+	return type(v) ~= 'function' and not (t and getmetatable(t) == t and metamethods[k])
 end
 local function pp(...)
 	local t = {}
