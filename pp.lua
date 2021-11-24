@@ -380,7 +380,7 @@ local function pp(...)
 	local n = select('#',...)
 	for i=1,n do
 		local v = select(i,...)
-		if type(v) == 'table' then
+		if not is_stringable(v) then
 			t[i] = to_string(v, '   ', {}, nil, nil, nil, true, filter)
 		else
 			t[i] = v
