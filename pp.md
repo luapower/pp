@@ -94,6 +94,10 @@ end
 
 Pretty-print a value to a file, prepending the string `'return '`.
 
+### `pp.load(path) -> v`
+
+Load back a saved value.
+
 ### `pp.stream(f, v, options...)`
 
 Pretty-print a value to an opened file.
