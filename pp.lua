@@ -366,7 +366,7 @@ local function to_stdout(v, ...)
 	return to_openfile(io.stdout, v, ...)
 end
 
-local metamethods = {
+local pp_skip = {
 	__index = 1,
 	__newindex = 1,
 	__mode = 1,
@@ -377,17 +377,17 @@ local function filter(v, k, t) --don't show methods and inherited objects.
 	return true
 end
 local function pp(...)
-	local t = {}
 	local n = select('#',...)
-	for i=1,n do
+	for i = 1, n do
 		local v = select(i,...)
-		if not is_stringable(v) then
-			t[i] = to_string(v, nil, nil, nil, nil, nil, nil, filter)
+		if is_stringable(v) then
+			io.stdout:write(tostring(v))
 		else
-			t[i] = v
+			to_openfile(io.stdout, v, nil, nil, nil, nil, nil, nil, filter)
 		end
 	end
-	print(unpack(t, 1, n))
+	io.stdout:write'\n'
+	io.stdout:flush()
 	return ...
 end
 
