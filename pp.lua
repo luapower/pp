@@ -6,7 +6,7 @@ if not ... then require'pp_test'; return end
 
 local type, tostring = type, tostring
 local string_format, string_dump = string.format, string.dump
-local math_huge, math_floor = math.huge, math.floor
+local math_huge, floor = math.huge, math.floor
 
 --pretty printing for non-structured types -----------------------------------
 
@@ -74,7 +74,7 @@ local function format_number(v)
 		return '1/0' --writing 'math.huge' would not make it portable, just wrong
 	elseif hasinf and v == -math_huge then
 		return '-1/0'
-	elseif v == math_floor(v) and v >= -2^31 and v <= 2^31-1 then
+	elseif v == floor(v) and v >= -2^31 and v <= 2^31-1 then
 		return string_format('%d', v) --printing with %d is faster
 	else
 		return string_format('%0.17g', v)
@@ -129,7 +129,7 @@ local function format_value(v, quote)
 	elseif is_int64(v) then
 		return format_int64(v)
 	else
-		error('unserializable', 0)
+		assert(false)
 	end
 end
 
@@ -151,7 +151,7 @@ local function write_value(v, write, quote)
 	elseif is_int64(v) then
 		write_int64(v, write)
 	else
-		error('unserializable', 0)
+		assert(false)
 	end
 end
 
@@ -219,7 +219,7 @@ local function is_array_index_key(k, maxn)
 	return
 		maxn > 0
 		and type(k) == 'number'
-		and k == math.floor(k)
+		and k == floor(k)
 		and k >= 1
 		and k <= maxn
 end
@@ -243,13 +243,14 @@ local function pretty(v, write, depth, wwrapper, indent,
 
 	elseif type(v) == 'table' then
 
-		if parents then
-			if parents[v] then
-				write(onerror and onerror('cycle', v, depth) or 'nil --[[cycle]]')
-				return
-			end
-			parents[v] = true
+		if indent == nil then indent = '\t' end
+
+		parents = parents or {}
+		if parents[v] then
+			write(onerror and onerror('cycle', v, depth) or 'nil --[[cycle]]')
+			return
 		end
+		parents[v] = true
 
 		write'{'
 
@@ -274,7 +275,7 @@ local function pretty(v, write, depth, wwrapper, indent,
 			end
 		end
 
-		local pairs = sort_keys and sortedpairs or pairs
+		local pairs = sort_keys ~= false and sortedpairs or pairs
 		for k,v in pairs(t, parents) do
 			if not is_array_index_key(k, maxn) and filter(v, k, t) then
 				if first then
@@ -309,9 +310,7 @@ local function pretty(v, write, depth, wwrapper, indent,
 
 		write'}'
 
-		if parents then
-			parents[v] = nil
-		end
+		parents[v] = nil
 
 	else
 		write(onerror and onerror('unserializable', v, depth) or
@@ -352,14 +351,15 @@ function to_string(v, ...) --fw. declared
 end
 
 local function to_openfile(f, v, ...)
-	f:write'return '
-	pretty(v, function(s) f:write(s) end, 1, nil, args(...))
+	pretty(v, function(s) assert(f:write(s)) end, 1, nil, args(...))
 end
 
 local function to_file(file, v, ...)
-	local f = assert(io.open(file, 'wb'))
-	to_openfile(f, v, ...)
-	f:close()
+	local glue = require'glue'
+	return glue.writefile(file, coroutine.wrap(function(...)
+		coroutine.yield'return '
+		to_sink(coroutine.yield, v, ...)
+	end, ...))
 end
 
 local function to_stdout(v, ...)
@@ -371,8 +371,7 @@ local metamethods = {
 	__newindex = 1,
 	__mode = 1,
 }
-
-local function filter(v, k, t)
+local function filter(v, k, t) --don't show methods and inherited objects.
 	return type(v) ~= 'function' and not (t and getmetatable(t) == t and metamethods[k])
 end
 local function pp(...)
@@ -381,7 +380,7 @@ local function pp(...)
 	for i=1,n do
 		local v = select(i,...)
 		if not is_stringable(v) then
-			t[i] = to_string(v, '   ', {}, nil, nil, nil, true, filter)
+			t[i] = to_string(v, nil, nil, nil, nil, nil, nil, filter)
 		else
 			t[i] = v
 		end
@@ -406,7 +405,13 @@ return setmetatable({
 	format = to_string,
 	stream = to_openfile,
 	save = to_file,
-	print = to_stdout,
+	load = function(file)
+		local f, err = loadfile(file)
+		if not f then return nil, err end
+		local ok, v = pcall(f)
+		if not ok then return nil, v end
+		return v
+	end,
 	pp = pp, --old API
 
 }, {__call = function(self, ...)

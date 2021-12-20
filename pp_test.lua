@@ -13,23 +13,23 @@ assert(pp.format('\'"\t\n\r\b\0\1\2\31\32\33\125\126\127\128\255') ==
 						[['\'"\t\n\r\8\0\1\2\31 !}~\127\128\255']])
 
 --edge cases
-assert(pp.format{} == '{}')
+assert(pp.format{} == '{\n}')
 
 --recursion
 assert(pp.format(
-	 {1,2,3,a={4,5,6,b={c={d={e={f={7,8,9}}}}}}}, {sort_keys = true}) ==
+	 {1,2,3,a={4,5,6,b={c={d={e={f={7,8,9}}}}}}}, {indent = false}) ==
 	'{1,2,3,a={4,5,6,b={c={d={e={f={7,8,9}}}}}}}')
 
 --table keys
 assert(pp.format(
-	 {[{[{[{[{[{[{}]='f'}]='e'}]='d'}]='c'}]='b'}]='a'}, {sort_keys = true}) ==
+	 {[{[{[{[{[{[{}]='f'}]='e'}]='d'}]='c'}]='b'}]='a'}, {indent = false}) ==
 	"{[{[{[{[{[{[{}]='f'}]='e'}]='d'}]='c'}]='b'}]='a'}")
 
 --indentation
 local c = {[{'c'}] = 'c'}
 local s1 = pp.format(
 	{'a','b','c','d',a=1,b={a=1,b=2},[c]=c},
-	{indent = '   ', sort_keys = true})
+	{indent = '   '})
 local s2 = [[
 {
    'a',
@@ -71,7 +71,7 @@ local t = {
 	[setmetatable({}, {__tostring = function() return 'tostring_key' end})] =
 		setmetatable({}, {__tostring = function() return 'tostring_val' end}),
 }
-assert(pp.format(t) == "{tostring_key='tostring_val'}")
+assert(pp.format(t, false) == "{tostring_key='tostring_val'}")
 
 --cycle detection
 local t={a={}}; t.a=t
@@ -98,7 +98,7 @@ local s = pp.format({
 	[{z = 4, a = 7}] = 'b',
 	[setmetatable({}, {__tostring = function() return 'tostring_key' end})] =
 		setmetatable({}, {__tostring = function() return 'tostring_val' end}),
-}, {indent = ' ', sort_keys = true})
+}, {indent = ' '})
 assert(s == [==[
 {
  5,
@@ -134,3 +134,8 @@ assert(s == [==[
   z=5
  }]='b'
 }]==])
+
+local tmp = 'pp_test.tmp'
+assert(pp.save(tmp, {a=1, b=2}))
+assert(pp.format(assert(pp.load(tmp)), false) == '{a=1,b=2}')
+os.remove(tmp)
