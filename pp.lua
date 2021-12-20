@@ -372,7 +372,9 @@ local metamethods = {
 	__mode = 1,
 }
 local function filter(v, k, t) --don't show methods and inherited objects.
-	return type(v) ~= 'function' and not (t and getmetatable(t) == t and metamethods[k])
+	if type(v) == 'function' then return end --skip methods.
+	if getmetatable(t) == t and pp_skip[k] then return end --skip inherits.
+	return true
 end
 local function pp(...)
 	local t = {}
@@ -415,5 +417,5 @@ return setmetatable({
 	pp = pp, --old API
 
 }, {__call = function(self, ...)
-	return pp(...)
+	return self.pp(...)
 end})
