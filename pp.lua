@@ -382,6 +382,7 @@ local function pp(...)
 		local v = select(i,...)
 		if is_stringable(v) then
 			io.stdout:write(tostring(v))
+			io.stdout:write'\t'
 		else
 			to_openfile(io.stdout, v, nil, nil, nil, nil, nil, nil, filter)
 		end
